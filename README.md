@@ -9,7 +9,43 @@ Note that the current `master` branch intends to support [3.1.1](https://downloa
 
 ## How to generate TPCDS data with Iceberg
 
-Upload bootstrap script `tpcds-emr-bootstrap.sh` to S3, install EMR Spark with the script, then submit job:
+Upload bootstrap script `tpcds-emr-bootstrap.sh` to S3 to use as bootstrap action. Then add the following step:
+
+**Step type**: Spark application
+
+**Name**: anything you want
+
+**Deploy mode**: Client
+
+**Spark-submit options**:
+
+```shell
+--class org.apache.spark.sql.execution.benchmark.TPCDSDatagen
+--conf spark.sql.catalog.iceberg=org.apache.iceberg.spark.SparkCatalog
+--conf spark.sql.catalog.iceberg.warehouse=s3://yzhaoqin-iceberg-test/tpcds/warehouse
+--conf spark.sql.catalog.iceberg.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog
+```
+
+**Application location**: `/home/hadoop/spark-tpcds-datagen/target/spark-tpcds-datagen_2.12-0.1.0-SNAPSHOT-with-dependencies.jar`
+
+**Arguments**:
+
+```shell
+--overwrite
+--manifest-location s3://yzhaoqin-iceberg-test/tpcds/manifests
+--data-location s3://yzhaoqin-iceberg-test/tpcds/data
+--catalog iceberg
+--database tpcds
+--scale-factor 2
+--partition-tables
+--cluster-by-partition-columns
+--filter-out-null-partition-values
+--num-partitions 10
+```
+
+If the cluster is expensive, you might want to add the step when creating the cluster, and configure to terminate the cluster after step completes.
+
+The actual command executed based on this configuration is:
 
 ```shell
 spark-submit \
