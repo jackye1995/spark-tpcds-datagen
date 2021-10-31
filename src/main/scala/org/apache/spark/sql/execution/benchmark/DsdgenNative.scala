@@ -18,12 +18,10 @@
 package org.apache.spark.sql.execution.benchmark
 
 import java.io.{File, FileInputStream, FileOutputStream, InputStream, OutputStream}
-import org.xerial.snappy.OSInfo
 
 case class DsdgenNative() {
 
   val (dir, cmd) = {
-    val classLoader = Thread.currentThread().getContextClassLoader
     val tempDir = Utils.createTempDir()
     val srcDatagenDir = s"/etc/tpcds"
 
