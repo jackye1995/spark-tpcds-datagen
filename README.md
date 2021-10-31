@@ -22,7 +22,7 @@ spark-submit \
     --manifest-location s3://yzhaoqin-iceberg-test/tpcds/manifests \
     --data-location s3://yzhaoqin-iceberg-test/tpcds/data \
     --catalog iceberg \
-    --database tpcds1 \
+    --database tpcds \
     --scale-factor 2 \
     --partition-tables \
     --cluster-by-partition-columns \
