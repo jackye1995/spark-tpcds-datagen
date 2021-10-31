@@ -17,8 +17,7 @@
 
 package org.apache.spark.sql.execution.benchmark
 
-import java.io.{File, FileOutputStream, InputStream, OutputStream}
-
+import java.io.{File, FileInputStream, FileOutputStream, InputStream, OutputStream}
 import org.xerial.snappy.OSInfo
 
 case class DsdgenNative() {
@@ -32,10 +31,10 @@ case class DsdgenNative() {
       var in: InputStream = null
       var out: OutputStream = null
       try {
-        in = classLoader.getResourceAsStream(resourceName)
+        in = new FileInputStream(resourceName)
         if (in == null) {
           throw new RuntimeException(
-            s"Unsupported platform: OS=${OSInfo.getOSName} Arch=${OSInfo.getArchName}")
+            s"Dsdgen resource $resourceName not found")
         }
 
         out = new FileOutputStream(to)

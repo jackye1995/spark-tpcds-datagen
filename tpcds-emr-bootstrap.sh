@@ -38,5 +38,5 @@ git clone https://github.com/jackye1995/spark-tpcds-datagen.git /home/hadoop/spa
 cd /home/hadoop/spark-tpcds-datagen
 sudo git checkout iceberg
 sudo build/mvn install -DskipTests
-sudo mv src/main/resources/binaries/Linux/x86_64/dsdgen /etc/tpcds/.
-sudo mv src/main/resources/binaries/Linux/x86_64/tpcds.idx /etc/tpcds/.
+sudo cp src/main/resources/binaries/Linux/x86_64/dsdgen /etc/tpcds/.
+sudo cp src/main/resources/binaries/Linux/x86_64/tpcds.idx /etc/tpcds/.
