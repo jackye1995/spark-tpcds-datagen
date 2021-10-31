@@ -241,6 +241,8 @@ class Tables(sqlContext: SQLContext, scaleFactor: Int) extends Serializable {
       filterOutNullPartitionValues: Boolean,
       tableFilter: Set[String] = Set.empty,
       numPartitions: Int = 100): Unit = {
+    sqlContext.sql(s"CREATE DATABASE IF NOT EXISTS $catalog.$database")
+
     var tablesToBeGenerated = if (partitionTables) {
       tables
     } else {

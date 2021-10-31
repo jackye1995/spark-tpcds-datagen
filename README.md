@@ -18,6 +18,7 @@ spark-submit \
     --conf spark.sql.catalog.iceberg.warehouse=s3://yzhaoqin-iceberg-test/tpcds/warehouse \
     --conf spark.sql.catalog.iceberg.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog \
     /home/hadoop/spark-tpcds-datagen/target/spark-tpcds-datagen_2.12-0.1.0-SNAPSHOT-with-dependencies.jar \
+    --overwrite \
     --manifest-location s3://yzhaoqin-iceberg-test/tpcds/manifests \
     --data-location s3://yzhaoqin-iceberg-test/tpcds/data \
     --catalog iceberg \
