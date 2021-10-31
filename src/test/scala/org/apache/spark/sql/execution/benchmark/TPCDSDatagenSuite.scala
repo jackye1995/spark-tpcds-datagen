@@ -28,8 +28,11 @@ class TPCDSDatagenSuite extends SparkFunSuite with SharedSparkSession {
     val outputTempDir = Utils.createTempDir()
     val tpcdsTables = new Tables(spark.sqlContext, 1)
     tpcdsTables.genData(
-      location = outputTempDir.getAbsolutePath,
-      format = "parquet",
+      manifestLocation = outputTempDir.getAbsolutePath,
+      dataLocation = outputTempDir.getAbsolutePath,
+      catalog = "spark_catalog",
+      database = "default",
+      fileFormat = "parquet",
       overwrite = false,
       partitionTables = false,
       useDoubleForDecimal = false,

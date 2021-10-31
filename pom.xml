@@ -41,6 +41,7 @@
     <hadoop.version>3.2.0</hadoop.version>
     <hadoop.binary.version>3.2</hadoop.binary.version>
     <snappy-java.version>1.1.8.2</snappy-java.version>
+    <iceberg.version>0.12.0</iceberg.version>
 
     <test.java.home>${java.home}</test.java.home>
     <test.exclude.tags></test.exclude.tags>
@@ -55,6 +56,12 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-spark3-runtime</artifactId>
+      <version>${iceberg.version}</version>
       <scope>provided</scope>
     </dependency>
 

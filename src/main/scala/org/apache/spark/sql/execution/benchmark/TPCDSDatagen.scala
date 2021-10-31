@@ -19,7 +19,9 @@ package org.apache.spark.sql.execution.benchmark
 
 import scala.sys.process._
 
-import org.apache.spark.sql.{Column, DataFrame, Row, SaveMode, SparkSession, SQLContext}
+import org.apache.iceberg.TableProperties
+
+import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession, SQLContext}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
@@ -132,20 +134,22 @@ class Tables(sqlContext: SQLContext, scaleFactor: Int) extends Serializable {
     }
 
     def genData(
-        location: String,
-        format: String,
+        manifestLocation: String,
+        dataLocation: String,
+        catalog: String,
+        database: String,
+        fileFormat: String,
         overwrite: Boolean,
         clusterByPartitionColumns: Boolean,
         filterOutNullPartitionValues: Boolean,
         numPartitions: Int): Unit = {
-      val mode = if (overwrite) SaveMode.Overwrite else SaveMode.Ignore
-
-      val data = df(format != "text", numPartitions)
+      val tableIdentifier = s"$catalog.$database.$name"
+      val data = df(fileFormat != "text", numPartitions)
       val tempTableName = s"${name}_text"
       data.createOrReplaceTempView(tempTableName)
 
       val writer = if (partitionColumns.nonEmpty) {
-        if (clusterByPartitionColumns) {
+        val partitionedDf = if (clusterByPartitionColumns) {
           val columnString = data.schema.fields.map { field =>
             field.name
           }.mkString(",")
@@ -167,19 +171,35 @@ class Tables(sqlContext: SQLContext, scaleFactor: Int) extends Serializable {
               |  $partitionColumnString
             """.stripMargin
           val grouped = sqlContext.sql(query)
-          grouped.write
+          grouped
         } else {
-          data.write
+          data
         }
+        val firstPartitionKey = partitionedDf.col(partitionColumns.head)
+        val restPartitionKeys = partitionColumns.drop(0).map(c => partitionedDf.col(c))
+        partitionedDf
+          .writeTo(tableIdentifier)
+          .partitionedBy(firstPartitionKey, restPartitionKeys: _*)
       } else {
         // If the table is not partitioned, coalesce the data to a single file.
-        data.coalesce(1).write
+        data
+          .coalesce(1)
+          .writeTo(tableIdentifier)
       }
-      writer.format(format).mode(mode)
-      if (partitionColumns.nonEmpty) {
-        writer.partitionBy(partitionColumns : _*)
+
+      val createTableWriter = writer
+        .using("iceberg")
+        .tableProperty(TableProperties.OBJECT_STORE_ENABLED, "true")
+        .tableProperty(TableProperties.FORMAT_VERSION, "2")
+        .tableProperty(TableProperties.OBJECT_STORE_PATH, dataLocation)
+        .tableProperty(TableProperties.WRITE_METADATA_LOCATION, manifestLocation)
+        .tableProperty(TableProperties.DEFAULT_FILE_FORMAT, fileFormat)
+
+      if (overwrite) {
+        createTableWriter.createOrReplace()
+      } else {
+        createTableWriter.create()
       }
-      writer.save(location)
       sqlContext.dropTempTable(tempTableName)
     }
 
@@ -207,8 +227,11 @@ class Tables(sqlContext: SQLContext, scaleFactor: Int) extends Serializable {
   }
 
   def genData(
-      location: String,
-      format: String,
+      manifestLocation: String,
+      dataLocation: String,
+      catalog: String,
+      database: String,
+      fileFormat: String,
       overwrite: Boolean,
       partitionTables: Boolean,
       useDoubleForDecimal: Boolean,
@@ -238,8 +261,8 @@ class Tables(sqlContext: SQLContext, scaleFactor: Int) extends Serializable {
     }
 
     withSpecifiedDataType.foreach { table =>
-      val tableLocation = s"$location/${table.name}"
-      table.genData(tableLocation, format, overwrite, clusterByPartitionColumns,
+      table.genData(manifestLocation, dataLocation, catalog, database,
+        fileFormat, overwrite, clusterByPartitionColumns,
         filterOutNullPartitionValues, numPartitions)
     }
   }
@@ -799,8 +822,11 @@ object TPCDSDatagen {
     val spark = SparkSession.builder.getOrCreate()
     val tpcdsTables = new Tables(spark.sqlContext, datagenArgs.scaleFactor.toInt)
     tpcdsTables.genData(
-      datagenArgs.outputLocation,
-      datagenArgs.format,
+      datagenArgs.manifestLocation,
+      datagenArgs.dataLocation,
+      datagenArgs.catalog,
+      datagenArgs.database,
+      datagenArgs.fileFormat,
       datagenArgs.overwrite,
       datagenArgs.partitionTables,
       datagenArgs.useDoubleForDecimal,

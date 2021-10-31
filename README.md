@@ -7,6 +7,29 @@ is daily tracked in the Google Spreadsheet ([performance charts](https://docs.go
 
 Note that the current `master` branch intends to support [3.1.1](https://downloads.apache.org/spark/spark-3.1.1) on Scala 2.12.x. If you want to generate TPCDS data in Spark 3.0.x, please use [branch-3.0](https://github.com/maropu/spark-tpcds-datagen/tree/branch-3.0).
 
+## How to generate TPCDS data with Iceberg
+
+Upload bootstrap script `tpcds-emr-bootstrap.sh` to S3, install EMR Spark with the script, then submit job:
+
+```shell
+OPTIONS = "--manifest-location s3://yzhaoqin-iceberg-test/tpcds/manifests"
+OPTIONS += " --data-location s3://yzhaoqin-iceberg-test/tpcds/data"
+OPTIONS += " --catalog iceberg"
+OPTIONS += " --database tpcds1"
+OPTIONS += " --scale-factor 100"
+OPTIONS += " --partition-tables"
+OPTIONS += " --cluster-by-partition-columns"
+OPTIONS += " --filter-out-null-partition-values"
+OPTIONS += " --num-partitions 100"
+
+spark-submit \
+    --class org.apache.spark.sql.execution.benchmark.TPCDSDatagen \
+    --conf spark.sql.catalog.iceberg=org.apache.iceberg.spark.SparkCatalog \
+    --conf spark.sql.catalog.iceberg.warehouse=s3://yzhaoqin-iceberg-test/tpcds/warehouse \
+    --conf spark.sql.catalog.iceberg.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog \
+    /home/hadoop/spark-tpcds-datagen/target/spark-tpcds-datagen_2.12-0.1.0-SNAPSHOT-with-dependencies.jar $OPTIONS
+```
+
 ## How to generate TPCDS data
 
 You can generate TPCDS data in `/tmp/spark-tpcds-data`:

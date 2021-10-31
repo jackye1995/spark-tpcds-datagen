@@ -22,9 +22,12 @@ import java.util.Locale
 import scala.util.Try
 
 class TPCDSDatagenArguments(val args: Array[String]) {
-  var outputLocation: String = null
+  var manifestLocation: String = null
+  var dataLocation: String = null
+  var catalog: String = "spark_catalog"
+  var database: String = "default"
   var scaleFactor = "1"
-  var format = "parquet"
+  var fileFormat = "parquet"
   var overwrite = false
   var partitionTables = false
   var useDoubleForDecimal = false
@@ -42,16 +45,28 @@ class TPCDSDatagenArguments(val args: Array[String]) {
 
     while(args.nonEmpty) {
       args match {
-        case ("--output-location") :: value :: tail =>
-          outputLocation = value
+        case ("--manifest-location") :: value :: tail =>
+          manifestLocation = value
+          args = tail
+
+        case ("--data-location") :: value :: tail =>
+          dataLocation = value
+          args = tail
+
+        case ("--catalog") :: value :: tail =>
+          catalog = value
+          args = tail
+
+        case ("--database") :: value :: tail =>
+          database = value
           args = tail
 
         case ("--scale-factor") :: value :: tail =>
           scaleFactor = value
           args = tail
 
-        case ("--format") :: value :: tail =>
-          format = value
+        case ("--file-format") :: value :: tail =>
+          fileFormat = value
           args = tail
 
         case ("--overwrite") :: tail =>
@@ -103,9 +118,12 @@ class TPCDSDatagenArguments(val args: Array[String]) {
     System.err.println("""
       |Usage: spark-submit --class <this class> --conf key=value <spark tpcds datagen jar> [Options]
       |Options:
-      |  --output-location [STR]                Path to an output location
+      |  --manifest-location [STR]              Path to store all manifest files
+      |  --data-location [STR]                  Path to store all data files
+      |  --catalog [STR]                        Spark catalog name
+      |  --database [STR]                       Spark database name
       |  --scale-factor [NUM]                   Scale factor (default: 1)
-      |  --format [STR]                         Output format (default: parquet)
+      |  --file-format [STR]                    Output format (default: parquet)
       |  --overwrite                            Whether it overwrites existing data (default: false)
       |  --partition-tables                     Whether it partitions output data (default: false)
       |  --use-double-for-decimal               Whether it prefers double types instead of decimal types (default: false)
@@ -121,12 +139,6 @@ class TPCDSDatagenArguments(val args: Array[String]) {
   }
 
   private def validateArguments(): Unit = {
-    if (outputLocation == null) {
-      // scalastyle:off println
-      System.err.println("Must specify an output location")
-      // scalastyle:on println
-      printUsageAndExit(-1)
-    }
     if (Try(scaleFactor.toInt).getOrElse(-1) <= 0) {
       // scalastyle:off println
       System.err.println("Scale factor must be a positive number")

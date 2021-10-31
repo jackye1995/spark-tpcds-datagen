@@ -26,7 +26,7 @@ case class DsdgenNative() {
   val (dir, cmd) = {
     val classLoader = Thread.currentThread().getContextClassLoader
     val tempDir = Utils.createTempDir()
-    val srcDatagenDir = s"binaries/${OSInfo.getOSName}/${OSInfo.getArchName}"
+    val srcDatagenDir = s"/etc/tpcds"
 
     def copyNativeBinaryFromResource(resourceName: String, to: File) = {
       var in: InputStream = null
