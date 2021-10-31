@@ -28,6 +28,22 @@ spark-submit \
     --conf spark.sql.catalog.iceberg.warehouse=s3://yzhaoqin-iceberg-test/tpcds/warehouse \
     --conf spark.sql.catalog.iceberg.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog \
     /home/hadoop/spark-tpcds-datagen/target/spark-tpcds-datagen_2.12-0.1.0-SNAPSHOT-with-dependencies.jar $OPTIONS
+    
+spark-submit \
+    --class org.apache.spark.sql.execution.benchmark.TPCDSDatagen \
+    --conf spark.sql.catalog.iceberg=org.apache.iceberg.spark.SparkCatalog \
+    --conf spark.sql.catalog.iceberg.warehouse=s3://yzhaoqin-iceberg-test/tpcds/warehouse \
+    --conf spark.sql.catalog.iceberg.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog \
+    /home/hadoop/spark-tpcds-datagen/target/spark-tpcds-datagen_2.12-0.1.0-SNAPSHOT-with-dependencies.jar \
+    --manifest-location s3://yzhaoqin-iceberg-test/tpcds/manifests \
+    --data-location s3://yzhaoqin-iceberg-test/tpcds/data \
+    --catalog iceberg \
+    --database tpcds1 \
+    --scale-factor 100 \
+    --partition-tables \
+    --cluster-by-partition-columns \
+    --filter-out-null-partition-values \
+    --num-partitions 100
 ```
 
 ## How to generate TPCDS data

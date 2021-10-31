@@ -176,7 +176,7 @@ class Tables(sqlContext: SQLContext, scaleFactor: Int) extends Serializable {
           data
         }
         val firstPartitionKey = partitionedDf.col(partitionColumns.head)
-        val restPartitionKeys = partitionColumns.drop(0).map(c => partitionedDf.col(c))
+        val restPartitionKeys = partitionColumns.drop(1).map(c => partitionedDf.col(c))
         partitionedDf
           .writeTo(tableIdentifier)
           .partitionedBy(firstPartitionKey, restPartitionKeys: _*)
