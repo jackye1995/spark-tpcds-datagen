@@ -189,6 +189,7 @@ class Tables(sqlContext: SQLContext, scaleFactor: Int) extends Serializable {
 
       val createTableWriter = writer
         .using("iceberg")
+        .tableProperty(TableProperties.SPARK_WRITE_PARTITIONED_FANOUT_ENABLED, "true")
         .tableProperty(TableProperties.OBJECT_STORE_ENABLED, "true")
         .tableProperty(TableProperties.FORMAT_VERSION, "2")
         .tableProperty(TableProperties.OBJECT_STORE_PATH, dataLocation)

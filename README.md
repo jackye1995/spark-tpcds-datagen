@@ -12,23 +12,6 @@ Note that the current `master` branch intends to support [3.1.1](https://downloa
 Upload bootstrap script `tpcds-emr-bootstrap.sh` to S3, install EMR Spark with the script, then submit job:
 
 ```shell
-OPTIONS = "--manifest-location s3://yzhaoqin-iceberg-test/tpcds/manifests"
-OPTIONS += " --data-location s3://yzhaoqin-iceberg-test/tpcds/data"
-OPTIONS += " --catalog iceberg"
-OPTIONS += " --database tpcds1"
-OPTIONS += " --scale-factor 100"
-OPTIONS += " --partition-tables"
-OPTIONS += " --cluster-by-partition-columns"
-OPTIONS += " --filter-out-null-partition-values"
-OPTIONS += " --num-partitions 100"
-
-spark-submit \
-    --class org.apache.spark.sql.execution.benchmark.TPCDSDatagen \
-    --conf spark.sql.catalog.iceberg=org.apache.iceberg.spark.SparkCatalog \
-    --conf spark.sql.catalog.iceberg.warehouse=s3://yzhaoqin-iceberg-test/tpcds/warehouse \
-    --conf spark.sql.catalog.iceberg.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog \
-    /home/hadoop/spark-tpcds-datagen/target/spark-tpcds-datagen_2.12-0.1.0-SNAPSHOT-with-dependencies.jar $OPTIONS
-    
 spark-submit \
     --class org.apache.spark.sql.execution.benchmark.TPCDSDatagen \
     --conf spark.sql.catalog.iceberg=org.apache.iceberg.spark.SparkCatalog \
@@ -39,11 +22,11 @@ spark-submit \
     --data-location s3://yzhaoqin-iceberg-test/tpcds/data \
     --catalog iceberg \
     --database tpcds1 \
-    --scale-factor 100 \
+    --scale-factor 2 \
     --partition-tables \
     --cluster-by-partition-columns \
     --filter-out-null-partition-values \
-    --num-partitions 100
+    --num-partitions 10
 ```
 
 ## How to generate TPCDS data
