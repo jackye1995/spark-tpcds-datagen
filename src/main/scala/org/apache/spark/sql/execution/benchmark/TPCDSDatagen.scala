@@ -192,6 +192,7 @@ class Tables(sqlContext: SQLContext, scaleFactor: Int) extends Serializable {
         .tableProperty(TableProperties.SPARK_WRITE_PARTITIONED_FANOUT_ENABLED, "true")
         .tableProperty(TableProperties.OBJECT_STORE_ENABLED, "true")
         .tableProperty(TableProperties.FORMAT_VERSION, "2")
+        .tableProperty(TableProperties.PARQUET_COMPRESSION, "snappy")
         .tableProperty(TableProperties.OBJECT_STORE_PATH, dataLocation)
         .tableProperty(TableProperties.WRITE_METADATA_LOCATION, manifestLocation)
         .tableProperty(TableProperties.DEFAULT_FILE_FORMAT, fileFormat)
